@@ -15,16 +15,20 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Badge } from "../ui/badge";
 
 export function SignUpForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState<string>("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
+  const [name, setName] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
   const router = useRouter();
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -39,15 +43,34 @@ export function SignUpForm({
       return;
     }
 
+    if (!role) {
+      setError("Please select a role");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/protected`,
+          emailRedirectTo: `${
+            window.location.origin
+          }/auth/${role.toLowerCase()}/confirm`,
         },
       });
       if (error) throw error;
+
+      // Insert user role
+      if (data.user) {
+        const { error: roleError } = await supabase.from("user_roles").insert({
+          user_id: data.user.id,
+          name: name,
+          role: role.toLowerCase().replace(" ", "_"), // Convert "Club Rep" to "club_rep"
+        });
+        if (roleError) throw roleError;
+      }
+
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
@@ -78,6 +101,17 @@ export function SignUpForm({
                 />
               </div>
               <div className="grid gap-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
                 </div>
@@ -100,6 +134,32 @@ export function SignUpForm({
                   value={repeatPassword}
                   onChange={(e) => setRepeatPassword(e.target.value)}
                 />
+              </div>
+              <div className="gap-2 flex flex-col-3 items-center justify-between">
+                <Button
+                  type="button"
+                  className="w-1/3"
+                  variant={role === "Player" ? "default" : "outline"}
+                  onClick={() => setRole("Player")}
+                >
+                  Player
+                </Button>
+                <Button
+                  type="button"
+                  className="w-1/3"
+                  variant={role === "Agent" ? "default" : "outline"}
+                  onClick={() => setRole("Agent")}
+                >
+                  Agent
+                </Button>
+                <Button
+                  type="button"
+                  className="w-1/3"
+                  variant={role === "Club Rep" ? "default" : "outline"}
+                  onClick={() => setRole("Club Rep")}
+                >
+                  Club Rep
+                </Button>
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full" disabled={isLoading}>
