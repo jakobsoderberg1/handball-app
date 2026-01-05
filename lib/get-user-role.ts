@@ -6,7 +6,7 @@ export async function getUserRole(userId: string): Promise<UserRole> {
   const supabase = await createClient();
 
   const { data } = await supabase
-    .from("user_roles")
+    .from("user_info")
     .select("role")
     .eq("user_id", userId)
     .single();

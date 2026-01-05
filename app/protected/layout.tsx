@@ -1,8 +1,3 @@
-import { AuthButton } from "@/components/auth/auth-button";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import Link from "next/link";
-import { Suspense } from "react";
-
 export default function ProtectedLayout({
   children,
 }: {
