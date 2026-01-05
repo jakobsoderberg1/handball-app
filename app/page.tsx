@@ -62,7 +62,7 @@ export default function Home() {
               Your gateway to professional handball recruiting.
             </p>
           </div>
-          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {userId ? (
               <Card>
                 <CardHeader className="pb-2">
@@ -90,14 +90,13 @@ export default function Home() {
                     Please log in or sign up to access the full features of
                     handballIn.
                   </p>
-                  <div className="flex items-center justify-center mx-auto mt-4">
+                  <div className="flex items-center justify-center mx-auto mt-8">
                     <Button onClick={() => router.push("/auth/login")}>
                       Login
                     </Button>
                     <Button
-                      variant="secondary"
                       onClick={() => router.push("/auth/sign-up")}
-                      className="ml-4"
+                      className="ml-4 bg-sky-700 hover:bg-sky-800 text-white"
                     >
                       Sign Up
                     </Button>
@@ -105,7 +104,7 @@ export default function Home() {
                 </CardContent>
               </Card>
             )}
-            <Card>
+            <Card className="lg:col-span-2">
               <CardHeader className="pb-2">
                 <CardTitle className="text-2xl font-semibold tracking-tight">
                   New Player Profiles
@@ -120,7 +119,7 @@ export default function Home() {
                   <div
                     key={index}
                     className="border rounded-md p-4 mt-2 border-gray-200 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                    onClick={() => router.push(`/player/${player.user_id}`)}
+                    onClick={() => router.push(`/players/${player.user_id}`)}
                   >
                     <p className="text-md font-medium">
                       {player.user_info.name}

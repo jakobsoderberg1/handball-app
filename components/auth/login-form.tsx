@@ -41,7 +41,7 @@ export function LoginForm({
       const userId = data.user.id;
 
       const { data: profileData, error: profileError } = await supabase
-        .from("user_roles")
+        .from("user_info")
         .select("role")
         .eq("user_id", userId)
         .single();
@@ -98,7 +98,11 @@ export function LoginForm({
                 />
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="w-full bg-sky-700 hover:bg-sky-800 text-white"
+                disabled={isLoading}
+              >
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </div>

@@ -4,15 +4,6 @@ import { DataTable } from "./data-table";
 import { playerColumns as columns } from "./columns";
 import { cacheTag, cacheLife } from "next/cache";
 
-type Player = {
-  name: string;
-  position: string;
-  birth_date: string;
-  nationality: string;
-  club: string;
-  contract_expiry?: string;
-};
-
 async function fetchPlayers() {
   "use cache";
   cacheTag("players-data");
@@ -20,8 +11,10 @@ async function fetchPlayers() {
   const supabase = createClient();
   const { data: players, error } = await supabase
     .from("players")
-    .select("*, nations(name), player_club(clubs(name), end_date)")
-    .order("name", { ascending: true });
+    .select(
+      "*, user_info(name), nations(name), player_club(clubs(name, id), end_date)"
+    )
+    .order("user_info(name)", { ascending: true });
 
   if (error) {
     console.error("Error fetching players:", error);
@@ -43,8 +36,11 @@ async function fetchPlayers() {
 
     return {
       ...player,
+      user_id: player.user_id,
+      name: player.user_info?.name || "",
       nationality: player.nations?.name || "",
       club: mostRecentClub?.clubs?.name || "",
+      club_id: mostRecentClub?.clubs?.id || "",
       contract_expiry: mostRecentClub?.end_date || null,
     };
   });

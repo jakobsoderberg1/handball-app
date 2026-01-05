@@ -50,7 +50,7 @@ export function NavBar() {
   return (
     <div className="w-full flex h-20 items-center justify-between border-b px-8 mt-2">
       <Link href="/" className="ml-20 flex items-center">
-        <h1 className="text-2xl font-bold dark:text-gray-300">handballIn</h1>
+        <h1 className="text-2xl font-bold text-sky-700">handballIn</h1>
       </Link>
 
       <div className="mr-4 px-2">
