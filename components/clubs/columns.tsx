@@ -2,13 +2,9 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-type Club = {
-  club_id: string;
-  name: string;
-  nation: string;
-};
+import type { ClubTableRow } from "@/lib/types/clubs";
 
-export const clubColumns: ColumnDef<Club>[] = [
+export const clubColumns: ColumnDef<ClubTableRow>[] = [
   {
     accessorKey: "name",
     header: "Club Name",

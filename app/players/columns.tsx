@@ -5,6 +5,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 
 type Player = {
+  id: string;
   user_id: string;
   name: string;
   position: string;
@@ -21,7 +22,7 @@ export const playerColumns: ColumnDef<Player>[] = [
     header: "Name",
     cell: ({ row }) => (
       <Link
-        href={`/players/${row.original.user_id}`}
+        href={`/players/${row.original.id}`}
         className="hover:text-muted-foreground hover:underline"
       >
         {row.original.name}
