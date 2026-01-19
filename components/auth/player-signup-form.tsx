@@ -28,7 +28,9 @@ import { Checkbox } from "../ui/checkbox";
 import { TablesInsert } from "@/lib/supabase/types";
 
 type PlayerClub = TablesInsert<"player_club">;
-type Agent = TablesInsert<"agents">;
+type Agent = TablesInsert<"agents"> & {
+  name: string;
+};
 type Nation = TablesInsert<"nations">;
 type Club = TablesInsert<"clubs">;
 
@@ -58,11 +60,10 @@ export default function PlayerSignUpForm({
   const [playerClubs, setPlayerClubs] = useState<PlayerClubWithUI[]>([
     {
       clubCountry: null,
-      club_id: undefined,
-      start_date: undefined,
-      end_date: undefined,
-      is_current: false,
-      player_id: undefined,
+      club_id: "",
+      start_date: null,
+      end_date: null,
+      player_id: userId ?? "",
       openStartDate: false,
       openEndDate: false,
     },
@@ -526,11 +527,10 @@ export default function PlayerSignUpForm({
                       ...playerClubs,
                       {
                         clubCountry: null,
-                        club_id: undefined,
-                        start_date: undefined,
-                        end_date: undefined,
-                        is_current: false,
-                        player_id: undefined,
+                        club_id: "",
+                        start_date: null,
+                        end_date: null,
+                        player_id: userId ?? "",
                         openStartDate: false,
                         openEndDate: false,
                       },

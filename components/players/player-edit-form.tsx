@@ -17,7 +17,7 @@ import {
 } from "../ui/select";
 
 type PlayerClub = {
-  club_id: string; // or string if it truly is text in DB
+  club_id: string;
   nationality: string;
   clubs: { name: string };
   start_date: string | null;
@@ -25,6 +25,7 @@ type PlayerClub = {
 };
 
 type PlayerData = Tables<"players"> & {
+  name: string;
   contact: string;
   nation: string;
   player_club: PlayerClub[];

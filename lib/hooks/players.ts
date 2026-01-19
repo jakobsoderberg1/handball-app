@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { Player } from "@/lib/types/players";
 import { useState, useEffect } from "react";
-import { fetchPlayerData } from "../services/players";
+import { getPlayerById } from "../services/players";
 import getCurrentUser from "../services/users";
 
 type Status = "loading" | "error" | "success" | "not_found";
@@ -20,7 +20,7 @@ export function usePlayer(playerId: string) {
         setStatus("loading");
         setLoadError(null);
         const db = createClient();
-        const fetched = await fetchPlayerData(db, playerId);
+        const fetched = await getPlayerById(db, playerId);
         if (cancelled) return;
 
         if (!fetched) {

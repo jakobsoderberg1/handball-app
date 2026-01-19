@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { Tables } from "@/lib/supabase/types";
 import { Player, PlayerClub } from "@/lib/types/players";
 
-export async function fetchPlayerData(
+export async function getPlayerById(
   db: SupabaseClient,
   targetPlayerId: string
 ) {
@@ -11,7 +11,7 @@ export async function fetchPlayerData(
     .select(
       "*, nations(name), player_agent(agents(user_info(name))), player_club(clubs(name, nations(name)), club_id, start_date, end_date)"
     )
-    .eq("id", targetPlayerId)
+    .eq("user_id", targetPlayerId)
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
