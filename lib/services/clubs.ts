@@ -37,7 +37,7 @@ export async function getClubById(db: SupabaseClient, clubId: string) {
   const { data: club, error } = await db
     .from("clubs")
     .select(
-      "id, nation_id, name, nations(name), club_competition(competitions(id, name))"
+      "id, nation_id, name, nations(name), club_competition(competitions(id, name))",
     )
     .eq("id", clubId)
     .maybeSingle();
@@ -52,7 +52,7 @@ export async function getClubById(db: SupabaseClient, clubId: string) {
         id: club.id as string,
         nation_id: club.nation_id as string,
         name: club.name as string,
-        nation: club.nations.name || ("" as string),
+        nation: club.nations[0]?.name || ("" as string),
         competitions: club.club_competition.map((comp: any) => ({
           id: comp.competitions.id,
           name: comp.competitions.name,

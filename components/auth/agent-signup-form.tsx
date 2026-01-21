@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/client";
-import { se } from "date-fns/locale";
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardTitle } from "../ui/card";
 import { Label } from "../ui/label";

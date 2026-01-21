@@ -1,6 +1,5 @@
 "use client";
 
-import { Tables } from "@/lib/supabase/types";
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 
