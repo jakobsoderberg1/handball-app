@@ -35,13 +35,16 @@ export async function getPlayerById(
       data.player_agent?.agents?.user_info?.name ||
       userInfo?.email ||
       "No contact",
-    player_club: (data.player_club || []).map((pc: any) => ({
-      club_name: pc.clubs?.name || "Unknown",
-      nationality: pc.clubs?.nations?.name || "Unknown",
-      start_date: pc.start_date,
-      end_date: pc.end_date,
-      club_id: pc.club_id,
-    })),
+    player_club: (data.player_club || []).map(
+      (pc: any) =>
+        ({
+          club_name: pc.clubs?.name || "Unknown",
+          nationality: pc.clubs?.nations?.name || "Unknown",
+          start_date: pc.start_date,
+          end_date: pc.end_date,
+          club_id: pc.club_id,
+        }) as PlayerClub,
+    ),
   };
   console.log("Fetched player data:", playerData);
   return playerData;

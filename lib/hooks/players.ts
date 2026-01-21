@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Player } from "@/lib/types/players";
 import { useState, useEffect } from "react";
 import { getPlayerById } from "../services/players";
-import getCurrentUser from "../services/users";
+import { getCurrentUser } from "../services/users";
 
 type Status = "loading" | "error" | "success" | "not_found";
 
