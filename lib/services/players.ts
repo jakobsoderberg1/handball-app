@@ -1,15 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { Tables } from "@/lib/supabase/types";
 import { Player, PlayerClub } from "@/lib/types/players";
 
 export async function getPlayerById(
   db: SupabaseClient,
-  targetPlayerId: string
+  targetPlayerId: string,
 ) {
   const { data, error } = await db
     .from("players")
     .select(
-      "*, nations(name), player_agent(agents(user_info(name))), player_club(clubs(name, nations(name)), club_id, start_date, end_date)"
+      "*, nations(name), player_agent(agents(user_info(name))), player_club(clubs(name, nations(name)), club_id, start_date, end_date)",
     )
     .eq("user_id", targetPlayerId)
     .maybeSingle();
@@ -37,7 +36,7 @@ export async function getPlayerById(
       userInfo?.email ||
       "No contact",
     player_club: (data.player_club || []).map((pc: any) => ({
-      clubs: { name: pc.clubs?.name || "Unknown" },
+      club_name: pc.clubs?.name || "Unknown",
       nationality: pc.clubs?.nations?.name || "Unknown",
       start_date: pc.start_date,
       end_date: pc.end_date,

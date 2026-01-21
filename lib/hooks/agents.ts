@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Agent } from "@/lib/types/agents";
-import { createClient } from "../supabase/server";
-import getAllAgents from "../services/agents";
+import { createClient } from "@/lib/supabase/client";
+import getAllAgents from "@/lib/services/agents";
 
-export default async function useAgents() {
+export function useAgents() {
   // Placeholder implementation
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -19,4 +19,26 @@ export default async function useAgents() {
         // Simulate fetching agents
         const db = createClient();
         const agents = await getAllAgents(db);
+        if (!cancelled) {
+          setAgents(agents);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err as Error);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { agents, loading, error };
 }

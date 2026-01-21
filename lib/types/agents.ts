@@ -1,5 +1,5 @@
 export type Agent = {
-  user_id: string;
+  id: string;
   name: string;
   email: string;
 };

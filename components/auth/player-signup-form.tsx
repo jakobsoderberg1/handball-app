@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -25,20 +24,15 @@ import {
 } from "../ui/select";
 import { createClient } from "@/lib/supabase/client";
 import { Checkbox } from "../ui/checkbox";
-import { TablesInsert } from "@/lib/supabase/types";
+import { Nation } from "@/lib/types/nations";
+import { Club } from "@/lib/types/clubs";
+import { Agent } from "@/lib/types/agents";
+import { PlayerClub } from "@/lib/types/players";
 
-type PlayerClub = TablesInsert<"player_club">;
-type Agent = TablesInsert<"agents"> & {
-  name: string;
-};
-type Nation = TablesInsert<"nations">;
-type Club = TablesInsert<"clubs">;
-
-type PlayerClubWithUI = PlayerClub & {
-  clubCountry: string | null;
+interface PlayerClubForm extends PlayerClub {
   openStartDate: boolean;
   openEndDate: boolean;
-};
+}
 
 export default function PlayerSignUpForm({
   userId,
@@ -57,13 +51,15 @@ export default function PlayerSignUpForm({
   const [position, setPosition] = useState<string | null>(null);
   const [clubs, setClubs] = useState<Club[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [playerClubs, setPlayerClubs] = useState<PlayerClubWithUI[]>([
+  const [playerClubs, setPlayerClubs] = useState<PlayerClubForm[]>([
     {
-      clubCountry: null,
       club_id: "",
+      player_id: userId ?? "",
+      nationality: "",
+      club_name: "",
       start_date: null,
       end_date: null,
-      player_id: userId ?? "",
+      junior: false,
       openStartDate: false,
       openEndDate: false,
     },
@@ -184,8 +180,8 @@ export default function PlayerSignUpForm({
         error instanceof Error
           ? error.message
           : typeof error === "object" && error !== null
-          ? JSON.stringify(error)
-          : "An error occurred";
+            ? JSON.stringify(error)
+            : "An error occurred";
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -222,7 +218,7 @@ export default function PlayerSignUpForm({
                   </SelectTrigger>
                   <SelectContent>
                     {nations.map((nation) => (
-                      <SelectItem key={nation.id} value={nation.id!}>
+                      <SelectItem key={nation.id} value={String(nation.id)}>
                         {nation.name}
                       </SelectItem>
                     ))}
@@ -313,7 +309,7 @@ export default function PlayerSignUpForm({
                   <SelectContent>
                     <SelectItem value="none">No agent</SelectItem>
                     {agents.map((agent) => (
-                      <SelectItem key={agent.id} value={agent.id!}>
+                      <SelectItem key={agent.id} value={String(agent.id)}>
                         {agent.name}
                       </SelectItem>
                     ))}
@@ -333,7 +329,7 @@ export default function PlayerSignUpForm({
                           className="absolute top-1 right-2"
                           onClick={() => {
                             const newClubs = playerClubs.filter(
-                              (_, i) => i !== index
+                              (_, i) => i !== index,
                             );
                             setPlayerClubs(newClubs);
                           }}
@@ -349,11 +345,16 @@ export default function PlayerSignUpForm({
                           Club Country
                         </Label>
                         <Select
-                          value={club.clubCountry || undefined}
+                          value={club.nationality ?? undefined}
                           onValueChange={(value) => {
-                            const newClubs = [...playerClubs];
-                            newClubs[index].clubCountry = value;
-                            setPlayerClubs(newClubs);
+                            setPlayerClubs((prev) => {
+                              const next = [...prev];
+                              next[index] = {
+                                ...next[index],
+                                nationality: value,
+                              };
+                              return next;
+                            });
                           }}
                         >
                           <SelectTrigger className="w-full mt-4">
@@ -361,7 +362,10 @@ export default function PlayerSignUpForm({
                           </SelectTrigger>
                           <SelectContent>
                             {nations.map((nation) => (
-                              <SelectItem key={nation.id} value={nation.id!}>
+                              <SelectItem
+                                key={nation.id}
+                                value={String(nation.id)}
+                              >
                                 {nation.name}
                               </SelectItem>
                             ))}
@@ -371,9 +375,11 @@ export default function PlayerSignUpForm({
                       <Select
                         value={club.club_id || undefined}
                         onValueChange={(value) => {
-                          const newClubs = [...playerClubs];
-                          newClubs[index].club_id = value;
-                          setPlayerClubs(newClubs);
+                          setPlayerClubs((prev) => {
+                            const next = [...prev];
+                            next[index] = { ...next[index], club_id: value };
+                            return next;
+                          });
                         }}
                       >
                         <SelectTrigger className="w-full mt-4">
@@ -383,11 +389,11 @@ export default function PlayerSignUpForm({
                           {clubs
                             ?.filter(
                               (c) =>
-                                !club.clubCountry ||
-                                c.nation_id === club.clubCountry
+                                !club.nationality ||
+                                String(c.nation_id) === club.nationality,
                             )
                             .map((c) => (
-                              <SelectItem key={c.id} value={c.id!}>
+                              <SelectItem key={c.id} value={String(c.id)}>
                                 {c.name}
                               </SelectItem>
                             ))}
@@ -403,9 +409,14 @@ export default function PlayerSignUpForm({
                         <Popover
                           open={club.openStartDate}
                           onOpenChange={(open) => {
-                            const newClubs = [...playerClubs];
-                            newClubs[index].openStartDate = open;
-                            setPlayerClubs(newClubs);
+                            setPlayerClubs((prev) => {
+                              const next = [...prev];
+                              next[index] = {
+                                ...next[index],
+                                openStartDate: open,
+                              };
+                              return next;
+                            });
                           }}
                         >
                           <PopoverTrigger asChild>
@@ -437,12 +448,17 @@ export default function PlayerSignUpForm({
                               }
                               captionLayout="dropdown"
                               onSelect={(d) => {
-                                const newClubs = [...playerClubs];
-                                newClubs[index].start_date = d
-                                  ? d.toISOString().split("T")[0]
-                                  : undefined;
-                                newClubs[index].openStartDate = false;
-                                setPlayerClubs(newClubs);
+                                setPlayerClubs((prev) => {
+                                  const next = [...prev];
+                                  next[index] = {
+                                    ...next[index],
+                                    start_date: d
+                                      ? d.toISOString().split("T")[0]
+                                      : null,
+                                    openStartDate: false,
+                                  };
+                                  return next;
+                                });
                               }}
                             />
                           </PopoverContent>
@@ -456,9 +472,14 @@ export default function PlayerSignUpForm({
                         <Popover
                           open={club.openEndDate}
                           onOpenChange={(open) => {
-                            const newClubs = [...playerClubs];
-                            newClubs[index].openEndDate = open;
-                            setPlayerClubs(newClubs);
+                            setPlayerClubs((prev) => {
+                              const next = [...prev];
+                              next[index] = {
+                                ...next[index],
+                                openEndDate: open,
+                              };
+                              return next;
+                            });
                           }}
                         >
                           <PopoverTrigger asChild>
@@ -490,12 +511,17 @@ export default function PlayerSignUpForm({
                               }
                               captionLayout="dropdown"
                               onSelect={(d) => {
-                                const newClubs = [...playerClubs];
-                                newClubs[index].end_date = d
-                                  ? d.toISOString().split("T")[0]
-                                  : undefined;
-                                newClubs[index].openEndDate = false;
-                                setPlayerClubs(newClubs);
+                                setPlayerClubs((prev) => {
+                                  const next = [...prev];
+                                  next[index] = {
+                                    ...next[index],
+                                    end_date: d
+                                      ? d.toISOString().split("T")[0]
+                                      : null,
+                                    openEndDate: false,
+                                  };
+                                  return next;
+                                });
                               }}
                             />
                           </PopoverContent>
@@ -526,11 +552,13 @@ export default function PlayerSignUpForm({
                     setPlayerClubs([
                       ...playerClubs,
                       {
-                        clubCountry: null,
+                        nationality: "",
                         club_id: "",
+                        club_name: "",
                         start_date: null,
                         end_date: null,
                         player_id: userId ?? "",
+                        junior: false,
                         openStartDate: false,
                         openEndDate: false,
                       },

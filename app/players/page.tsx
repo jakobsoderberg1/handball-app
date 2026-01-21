@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
-import { TablesInsert } from "@/lib/supabase/types";
-import { DataTable } from "./data-table";
-import { playerColumns as columns } from "./columns";
+import { DataTable } from "../../components/players/player-table";
+import { playerColumns as columns } from "../../components/players/player-columns";
 import { cacheTag, cacheLife } from "next/cache";
 
 async function fetchPlayers() {
@@ -12,7 +11,7 @@ async function fetchPlayers() {
   const { data: players, error } = await supabase
     .from("players")
     .select(
-      "*, user_info(name), nations(name), player_club(clubs(name, id), end_date)"
+      "*, user_info(name), nations(name), player_club(clubs(name, id), end_date)",
     )
     .order("user_info(name)", { ascending: true });
 

@@ -58,7 +58,7 @@ export default function PlayerCard({
                               className="hover:underline"
                               href={`/clubs/${pc.club_id}`}
                             >
-                              {pc.clubs.name}
+                              {pc.club_name}
                             </a>
                           </strong>
                           <span className="text-muted-foreground">

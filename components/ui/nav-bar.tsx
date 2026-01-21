@@ -84,7 +84,7 @@ export function NavBar() {
                         <NavigationMenuLink asChild>
                           <a
                             onClick={handleLogout()}
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                           >
                             <p className="text-md">Logout</p>
                             <p className="text-muted-foreground text-sm">

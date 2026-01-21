@@ -4,10 +4,11 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Item, ItemContent, ItemGroup, ItemTitle } from "@/components/ui/item";
 import { Separator } from "@/components/ui/separator";
 import { createClient } from "@/lib/supabase/client";
-import { Tables } from "@/lib/supabase/types";
 import { useCallback, useEffect, useState } from "react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
+import { Player, PlayerClub } from "@/lib/types/players";
+import { Agent } from "@/lib/types/agents";
 import {
   Select,
   SelectContent,
@@ -15,46 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-
-type PlayerClub = {
-  club_id: string;
-  nationality: string;
-  clubs: { name: string };
-  start_date: string | null;
-  end_date: string | null;
-};
-
-type PlayerData = Tables<"players"> & {
-  name: string;
-  contact: string;
-  nation: string;
-  player_club: PlayerClub[];
-};
-
-type Agent = {
-  id: string;
-  name: string;
-};
-
-type RawAgent = {
-  id: string;
-  user_info: Array<{ name: string | null }> | null;
-};
-
-type RawPlayerClub = {
-  club_id: number;
-  start_date: string | null;
-  end_date: string | null;
-  clubs: {
-    name: string | null;
-    nations: { name: string | null } | null;
-  } | null;
-};
+import { Button } from "../ui/button";
 
 export default function PlayerEdit({ userId }: { userId: string }) {
-  const [player, setPlayer] = useState<PlayerData | null>(null);
+  const [player, setPlayer] = useState<Player | null>(null);
   const [nations, setNations] = useState<Array<{ id: string; name: string }>>(
-    []
+    [],
   );
   const [playerAgent, setPlayerAgent] = useState<string | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -69,7 +36,7 @@ export default function PlayerEdit({ userId }: { userId: string }) {
     const { data, error } = await supabase
       .from("players")
       .select(
-        "*, nations(name), player_agent(agents(user_info(name))), player_club(clubs(name, nations(name)), club_id, start_date, end_date)"
+        "*, nations(name), player_agent(agents(user_info(name))), player_club(clubs(name, nations(name)), club_id, start_date, end_date)",
       )
       .eq("user_id", userId)
       .single();
@@ -89,7 +56,7 @@ export default function PlayerEdit({ userId }: { userId: string }) {
         }
       }
       // Transform the data to match PlayerData type
-      const playerData: PlayerData = {
+      const playerData: Player = {
         ...data,
         name: data.user_info?.name || "Unknown",
         nation: data.nations?.name || "Unknown",
@@ -97,14 +64,14 @@ export default function PlayerEdit({ userId }: { userId: string }) {
           data.player_agent?.[0]?.agents?.user_info?.name ||
           data.user_info?.email ||
           "No contact",
-        player_club: (((data.player_club ?? []) as RawPlayerClub[]) || []).map(
+        player_club: (((data.player_club ?? []) as PlayerClub[]) || []).map(
           (pc) => ({
-            clubs: { name: pc.clubs?.name || "Unknown" },
-            nationality: pc.clubs?.nations?.name || "Unknown",
+            club_name: pc.club_name || "Unknown",
+            nationality: pc.nationality || "Unknown",
             start_date: pc.start_date,
             end_date: pc.end_date,
             club_id: pc.club_id,
-          })
+          }),
         ),
       };
       console.log("Fetched player data:", playerData);
@@ -137,15 +104,16 @@ export default function PlayerEdit({ userId }: { userId: string }) {
     const supabase = createClient();
     const { data, error } = await supabase
       .from("agents")
-      .select("id, user_info(name)")
+      .select("id, user_info(name, email)")
       .order("id", { ascending: true });
 
     if (error) {
       console.error("Error fetching agent:", error);
     } else {
-      const mappedAgents: Agent[] = ((data ?? []) as RawAgent[]).map((row) => ({
+      const mappedAgents: Agent[] = (data ?? []).map((row) => ({
         id: row.id,
         name: row.user_info?.[0]?.name ?? "Unknown",
+        email: row.user_info?.[0]?.email ?? "No email",
       }));
 
       setAgents(mappedAgents);
@@ -156,6 +124,7 @@ export default function PlayerEdit({ userId }: { userId: string }) {
   };
   useEffect(() => {
     fetchPlayerData();
+    fetchNations();
   }, [fetchPlayerData]);
 
   const positions = [
@@ -177,29 +146,7 @@ export default function PlayerEdit({ userId }: { userId: string }) {
             {player.name}
           </CardTitle>
           <CardContent>
-            <div className="grid gap-2">
-              <Label htmlFor="country">Nationality</Label>
-              <Select
-                value={player.nation}
-                onValueChange={(value) =>
-                  setPlayer({ ...player, nation: value })
-                }
-                onOpenChange={(open) => {
-                  if (open) fetchNations();
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select Country" />
-                </SelectTrigger>
-                <SelectContent>
-                  {nations.map((nation) => (
-                    <SelectItem key={nation.id} value={nation.name}>
-                      {nation.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <p>Nationality: {player.nation}</p>
             <div className="grid gap-2">
               <Label htmlFor="height" className="mt-4">
                 Height (cm)
@@ -283,7 +230,7 @@ export default function PlayerEdit({ userId }: { userId: string }) {
                               className="hover:underline"
                               href={`/club/${pc.club_id}`}
                             >
-                              {pc.clubs.name}
+                              {pc.club_name}
                             </a>
                           </strong>
                           <span className="text-muted-foreground">

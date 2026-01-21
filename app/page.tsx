@@ -35,13 +35,14 @@ export default function Home() {
   const fetchLatestPlayers = async () => {
     const { data, error } = await supabase
       .from("players")
-      .select("id, user_info(name), player_club(clubs(name)), user_id")
+      .select("user_info(name), player_club(clubs(name)), user_id")
       .order("created_at", { ascending: false })
       .limit(5);
     if (error) {
       console.log("Error fetching latest players:", error.message);
       return;
     }
+    console.log("Latest players fetched:", data);
     setLatestPlayers(data || []);
   };
 
@@ -119,7 +120,7 @@ export default function Home() {
                   <div
                     key={index}
                     className="border rounded-md p-4 mt-2 border-gray-200 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                    onClick={() => router.push(`/players/${player.id}`)}
+                    onClick={() => router.push(`/players/${player.user_id}`)}
                   >
                     <p className="text-md font-medium">
                       {player.user_info.name}

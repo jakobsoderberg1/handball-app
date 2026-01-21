@@ -1,9 +1,11 @@
 export type PlayerClub = {
-  club_id: number; // Club id (DB type)
+  player_id: string; // Player id (DB type)
+  club_id: string; // Club id (DB type)
   nationality: string;
-  clubs: { name: string };
+  club_name: string;
   start_date: string | null;
   end_date: string | null;
+  junior: boolean;
 };
 
 export type Player = {
