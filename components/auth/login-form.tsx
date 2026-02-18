@@ -26,6 +26,19 @@ export function LoginForm({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  const roleToProtectedSegment = (r: string) => {
+    switch (r) {
+      case "agent":
+        return "agent";
+      case "player":
+        return "player";
+      case "club_rep":
+        return "club-rep";
+      default:
+        return "player";
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const supabase = createClient();
@@ -47,8 +60,11 @@ export function LoginForm({
         .single();
       if (profileError) throw profileError;
       const role = profileData?.role;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push(`/${role}s/${userId}`);
+      // The user now has an active session; refresh UI and redirect to protected area.
+      router.refresh();
+      router.push(
+        `/protected/${roleToProtectedSegment(role ?? "player")}/${userId}`,
+      );
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {

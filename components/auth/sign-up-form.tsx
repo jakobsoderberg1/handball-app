@@ -49,27 +49,23 @@ export function SignUpForm({
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${
-            window.location.origin
-          }/auth/${role.toLowerCase()}/confirm`,
+          emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(
+            `/auth/${role}/confirm`,
+          )}`,
+          data: {
+            name,
+            role: role.toLowerCase().replace(" ", "_"), // Convert "Club Rep" to "club_rep"
+          },
         },
       });
-      if (error) throw error;
-
-      // Insert user role
-      if (data.user) {
-        const { error: roleError } = await supabase.from("user_roles").insert({
-          user_id: data.user.id,
-          name: name,
-          role: role.toLowerCase().replace(" ", "_"), // Convert "Club Rep" to "club_rep"
-        });
-        if (roleError) throw roleError;
+      if (error) {
+        setError(error.message);
+        return;
       }
-
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");

@@ -54,7 +54,7 @@ export default function Home() {
   return (
     <section className="py-12">
       <div className="max-w-screen-xl mx-auto px-4">
-        <div className="rounded-3xl border bg-gradient-to-b from-muted/40 to-background p-6 sm:p-10">
+        <div className="rounded-3xl min-h-fit border bg-gradient-to-b from-muted/40 to-background p-6 sm:p-10">
           <div className="mx-auto max-w-2xl text-center">
             <h1 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight">
               Welcome to handballIn

@@ -11,23 +11,35 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { createClient } from "@/lib/supabase/client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export function NavBar() {
   const [userId, setUserId] = useState<string | null>(null);
   const [role, setRole] = useState<string>("guest");
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
+
+  const roleToProtectedSegment = (r: string) => {
+    switch (r) {
+      case "agent":
+        return "agent";
+      case "player":
+        return "player";
+      case "club_rep":
+        return "club-rep";
+      default:
+        return "player";
+    }
+  };
+
   const handleLogout = () => async () => {
     await supabase.auth.signOut();
     window.location.href = "/";
   };
   useEffect(() => {
-    const run = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    let cancelled = false;
 
-      const id = user?.id ?? null;
+    const refreshUser = async (id: string | null) => {
+      if (cancelled) return;
       setUserId(id);
 
       if (!id) {
@@ -35,16 +47,35 @@ export function NavBar() {
         return;
       }
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("user_info")
         .select("role")
         .eq("user_id", id)
         .single();
 
+      if (cancelled) return;
+      if (error) {
+        setRole("guest");
+        return;
+      }
+
       setRole(data?.role ?? "guest");
     };
 
-    run();
+    supabase.auth.getUser().then(({ data }) => {
+      refreshUser(data.user?.id ?? null);
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        refreshUser(session?.user?.id ?? null);
+      },
+    );
+
+    return () => {
+      cancelled = true;
+      authListener.subscription.unsubscribe();
+    };
   }, [supabase]);
 
   return (
@@ -69,7 +100,7 @@ export function NavBar() {
                       <li>
                         <NavigationMenuLink asChild>
                           <Link
-                            href={`/protected/${role}/${userId}`}
+                            href={`/protected/${roleToProtectedSegment(role)}/${userId}`}
                             className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                           >
                             <p className="text-md">Dashboard</p>
